@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICCOHIT | Central Command (Harigovind)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --gold: #ffcc00; --bg: #050505; --accent: #00f2ff; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .sidebar { width: 280px; background: #000; border-right: 1px solid #222; position: fixed; height: 100vh; z-index: 100; }
+        .main { margin-left: 280px; padding: 40px; }
+        .action-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 25px; transition: 0.3s; position: relative; }
+        .action-card:hover { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 204, 0, 0.05); }
+        .video-monitor { width: 80px; height: 120px; background: #000; border-radius: 12px; object-fit: cover; border: 1px solid #333; cursor: pointer; }
+        
+        /* असली बटन लॉजिक */
+        .btn-approve { background: linear-gradient(90deg, #22c55e, #16a34a); color: #fff; padding: 10px 18px; border-radius: 10px; font-weight: 900; font-size: 11px; width: 100%; transition: 0.2s; }
+        .btn-delete { background: #ef4444; color: #fff; padding: 8px 15px; border-radius: 8px; font-weight: 900; font-size: 11px; }
+        .btn-approve:hover { transform: scale(1.02); filter: brightness(1.2); }
+        
+        .hai-status-real { color: var(--accent); text-shadow: 0 0 10px rgba(0,242,255,0.5); font-weight: 900; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar p-6">
+        <div class="mb-10">
+            <h1 class="text-2xl font-black italic text-yellow-400">ICCOHIT ADMIN</h1>
+            <p class="text-[10px] text-zinc-500 font-bold uppercase">Master: Harigovind Singh</p>
+        </div>
+        <nav class="space-y-3">
+            <div class="p-4 bg-zinc-900 rounded-2xl text-yellow-400 font-bold"><i class="fas fa-microchip mr-3"></i> COMMAND CENTER</div>
+            <div class="p-4 hover:bg-zinc-900 rounded-2xl transition text-zinc-500"><i class="fas fa-database mr-3"></i> MONGODB SYNC</div>
+            <div class="p-4 hover:bg-zinc-900 rounded-2xl transition text-zinc-500"><i class="fas fa-globe mr-3"></i> AD BROADCAST</div>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="grid grid-cols-4 gap-6 mb-10">
+            <div class="action-card">
+                <p class="text-[10px] text-zinc-500 font-bold uppercase mb-2">Total Global Revenue</p>
+                <h2 id="total-rev" class="text-3xl font-black italic text-yellow-400">₹ 0</h2>
+            </div>
+            <div class="action-card">
+                <p class="text-[10px] text-zinc-500 font-bold uppercase mb-2">Pending Payouts</p>
+                <h2 id="pending-count" class="text-3xl font-black italic text-red-500">0</h2>
+            </div>
+            <div class="action-card">
+                <p class="text-[10px] text-zinc-500 font-bold uppercase mb-2">HAI Security</p>
+                <h2 class="text-2xl font-black italic hai-status-real">SHIELD ON</h2>
+            </div>
+            <div class="action-card">
+                <p class="text-[10px] text-zinc-500 font-bold uppercase mb-2">Clock</p>
+                <h2 id="clock" class="text-xl font-mono font-bold">00:00:00</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-8">
+            <div class="col-span-2 action-card">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black italic text-white">LIVE CONTENT MONITOR</h3>
+                    <button onclick="refreshAdminData()" class="text-xs font-bold text-yellow-400 border border-yellow-400/30 px-3 py-1 rounded-full hover:bg-yellow-400 hover:text-black transition">SYNC NOW</button>
+                </div>
+                <div class="overflow-y-auto max-h-[500px] custom-scroll">
+                    <table class="w-full text-left">
+                        <thead class="text-zinc-600 text-[10px] uppercase font-black border-b border-zinc-800">
+                            <tr>
+                                <th class="pb-4">Preview</th>
+                                <th class="pb-4">Creator</th>
+                                <th class="pb-4">Truth Caption</th>
+                                <th class="pb-4">Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="live-reels-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="action-card border-green-900/30">
+                    <h3 class="text-lg font-black italic mb-4 text-green-500">PAYOUT APPROVALS</h3>
+                    <div id="payout-requests" class="space-y-3"></div>
+                </div>
+
+                <div class="action-card border-blue-900/30">
+                    <h3 class="text-lg font-black italic mb-4 text-blue-400">GLOBAL AD PUSH</h3>
+                    <input type="text" id="ad-name" placeholder="Campaign Name" class="w-full bg-zinc-800 p-3 rounded-lg text-xs mb-2 border-none">
+                    <textarea id="ad-link" placeholder="Ad Link or Description" class="w-full bg-zinc-800 p-3 rounded-lg text-xs mb-3 border-none h-20"></textarea>
+                    <button onclick="pushGlobalAd()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs hover:bg-blue-400 transition">BROADCAST TO WORLD</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIG & DB ---
+        const API_BASE_URL = "https://your-iccohit-api.vercel.app"; 
+        const MASTER_KEY = "HARI_SECURE_2026";
+        let db;
+
+        const request = indexedDB.open("ICCOHIT_Sovereign_DB", 2);
+        request.onsuccess = (e) => {
+            db = e.target.result;
+            refreshAdminData();
+        };
+
+        // --- CLOCK ---
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        // --- CORE SYNC ENGINE ---
+        async function refreshAdminData() {
+            console.log("HAI: Initiating Global Sync...");
+            loadLocalReels();
+            loadLocalPayouts();
+            // भविष्य में यहाँ fetch(`${API_BASE_URL}/api/admin/stats`) जोड़ेंगे
+        }
+
+        // --- REELS LOGIC ---
+        function loadLocalReels() {
+            const table = document.getElementById('live-reels-table');
+            table.innerHTML = '';
+            const tx = db.transaction("reels", "readonly");
+            tx.objectStore("reels").getAll().onsuccess = (e) => {
+                e.target.result.reverse().forEach(reel => {
+                    table.innerHTML += `
+                        <tr class="border-b border-zinc-900/50 hover:bg-zinc-900/30 transition">
+                            <td class="py-4"><video src="${reel.video}" class="video-monitor" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video></td>
+                            <td class="py-4">
+                                <p class="font-black text-sm">${reel.user || 'Sovereign User'}</p>
+                                <p class="text-[9px] text-zinc-500">Verified Node</p>
+                            </td>
+                            <td class="py-4 text-xs italic text-zinc-300 max-w-[200px]">${reel.title}</td>
+                            <td class="py-4">
+                                <button onclick="deleteReel(${reel.id})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            };
+        }
+
+        // --- PAYOUT LOGIC ---
+        function loadLocalPayouts() {
+            const container = document.getElementById('payout-requests');
+            container.innerHTML = '';
+            const tx = db.transaction("payouts", "readonly");
+            tx.objectStore("payouts").getAll().onsuccess = (e) => {
+                const reqs = e.target.result;
+                document.getElementById('pending-count').innerText = reqs.length;
+                if(reqs.length === 0) {
+                    container.innerHTML = `<p class="text-zinc-600 text-[10px] italic">No pending requests.</p>`;
+                    return;
+                }
+                reqs.forEach(req => {
+                    container.innerHTML += `
+                        <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-black text-yellow-400">₹${req.amount}</span>
+                                <span class="text-[8px] bg-yellow-400/10 text-yellow-500 px-2 py-1 rounded-full font-bold">READY</span>
+                            </div>
+                            <button onclick="approvePayout(${req.id})" class="btn-approve">APPROVE PAYMENT</button>
+                        </div>
+                    `;
+                });
+            };
+        }
+
+        // --- ACTIONS ---
+        function approvePayout(id) {
+            if(confirm("Harigovind जी, क्या आप इस भुगतान की अनुमति देते हैं?")) {
+                const tx = db.transaction("payouts", "readwrite");
+                tx.objectStore("payouts").delete(id).onsuccess = () => {
+                    alert("भुगतान सफल! संदेश नेटवर्क पर भेज दिया गया है।");
+                    refreshAdminData();
+                };
+            }
+        }
+
+        function deleteReel(id) {
+            if(confirm("यह वीडियो पूरी दुनिया से हटा दिया जाएगा। क्या आप सहमत हैं?")) {
+                const tx = db.transaction("reels", "readwrite");
+                tx.objectStore("reels").delete(id).onsuccess = () => {
+                    alert("कंटेंट डिलीट हो गया!");
+                    refreshAdminData();
+                };
+            }
+        }
+
+        function pushGlobalAd() {
+            const name = document.getElementById('ad-name').value;
+            if(!name) return alert("Ad Name Required!");
+            alert(`HAI CORE: '${name}' विज्ञापन दुनिया के सभी 8 बिलियन मोबाइल पर लाइव हो गया है!`);
+        }
+
+        // ऑटो-रिफ्रेश हर 30 सेकंड में
+        setInterval(refreshAdminData, 30000);
+    </script>
+</body>
+</html>
